@@ -1,6 +1,13 @@
 from fastapi import FastAPI
+from routes import producto_routes
 
-app = FastAPI(title="Sistema de Gestión para Puesto de Comida Rápida")
+app = FastAPI(
+    title="Sistema de Gestión para Puesto de Comida Rápida",
+    description="API para gestionar ventas, inventario, y más.",
+    version="0.1.0"
+)
+
+app.include_router(producto_routes.router)
 
 @app.get("/")
 def read_root():

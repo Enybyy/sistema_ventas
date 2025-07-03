@@ -5,7 +5,7 @@ from sqlalchemy.orm import sessionmaker
 # IMPORTANTE: Reemplaza con la URL de tu base de datos PostgreSQL
 # Formato: "postgresql://<user>:<password>@<host>/<dbname>"
 # Asegúrate de que la base de datos 'mollejitas_db' exista.
-SQLALCHEMY_DATABASE_URL = "postgresql://postgres:admin@localhost/mollejitas_db"
+SQLALCHEMY_DATABASE_URL = "postgresql://postgres:root@localhost/mollejitas_db"
 
 engine = create_engine(SQLALCHEMY_DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
