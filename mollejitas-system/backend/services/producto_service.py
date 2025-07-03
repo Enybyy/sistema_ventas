@@ -16,6 +16,13 @@ def create_producto(db: Session, producto: ProductoCreate) -> ProductoModel:
     db.refresh(db_producto)
     return db_producto
 
+def get_productos_bajo_stock(db: Session, umbral: int) -> List[ProductoModel]:
+    """
+    Obtiene una lista de productos cuyo stock es igual o menor al umbral especificado.
+    """
+    return db.query(ProductoModel).filter(ProductoModel.stock <= umbral).all()
+
+
 def update_producto(db: Session, producto_id: int, producto_update: ProductoUpdate) -> Optional[ProductoModel]:
     db_producto = get_producto(db, producto_id)
     if not db_producto:

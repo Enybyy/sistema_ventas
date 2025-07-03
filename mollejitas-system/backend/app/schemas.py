@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from datetime import datetime
+from datetime import date, datetime
 from typing import List, Optional
 
 # Esquema para Producto (Base)
@@ -64,3 +64,70 @@ class Venta(VentaBase):
 
     class Config:
         from_attributes = True
+
+# Esquemas para Gasto
+class GastoBase(BaseModel):
+    descripcion: str
+    monto: float
+    categoria: Optional[str] = None
+    fecha: Optional[date] = None
+
+class GastoCreate(GastoBase):
+    pass
+
+class GastoUpdate(GastoBase):
+    pass
+
+class Gasto(GastoBase):
+    id: int
+
+    class Config:
+        orm_mode = True
+
+# Esquemas para DetalleCompra
+class DetalleCompraBase(BaseModel):
+    producto_id: int
+    cantidad: int
+    costo_unitario: float
+
+class DetalleCompraCreate(DetalleCompraBase):
+    pass
+
+class DetalleCompra(DetalleCompraBase):
+    id: int
+    compra_id: int
+
+    class Config:
+        from_attributes = True
+
+# Esquemas para Compra
+class CompraBase(BaseModel):
+    proveedor: str | None = None
+    detalles: list[DetalleCompraCreate]
+
+class CompraCreate(CompraBase):
+    pass
+
+class Compra(CompraBase):
+    id: int
+    fecha: datetime
+    total: float
+    detalles: List[DetalleCompra] = []
+
+    class Config:
+        from_attributes = True
+
+
+# Esquemas para Reportes
+class ReporteRankingProducto(BaseModel):
+    producto: Producto
+    cantidad_total_vendida: int
+
+    class Config:
+        orm_mode = True
+
+
+class ReporteGanancias(BaseModel):
+    total_ventas: float
+    costo_total: float
+    ganancia_neta: float

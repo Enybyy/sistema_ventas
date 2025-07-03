@@ -48,6 +48,8 @@ sys.path.insert(0, os.path.realpath(os.path.join(os.path.dirname(__file__), '..'
 from app.database import Base
 from models.producto import Producto
 from models.venta import Venta, DetalleVenta # Import all models here
+from models.compra import Compra, DetalleCompra
+from models.gasto import Gasto
 
 target_metadata = Base.metadata
 

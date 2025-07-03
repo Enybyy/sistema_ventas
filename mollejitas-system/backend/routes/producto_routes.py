@@ -2,9 +2,9 @@ from typing import List
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
+from app.schemas import Producto, ProductoCreate, ProductoUpdate
 from app.dependencies import get_db
 from services import producto_service
-from app.schemas import Producto, ProductoCreate, ProductoUpdate
 
 router = APIRouter(
     prefix="/productos",
@@ -30,6 +30,16 @@ def read_producto(producto_id: int, db: Session = Depends(get_db)):
     if db_producto is None:
         raise HTTPException(status_code=404, detail="Producto no encontrado")
     return db_producto
+
+
+@router.get("/reportes/bajo-stock", response_model=List[Producto])
+def get_productos_con_bajo_stock(
+    umbral: int = 10, db: Session = Depends(get_db)
+):
+    """
+    Obtiene una lista de productos con stock bajo según un umbral.
+    """
+    return producto_service.get_productos_bajo_stock(db=db, umbral=umbral)
 
 
 @router.patch("/{producto_id}", response_model=Producto)

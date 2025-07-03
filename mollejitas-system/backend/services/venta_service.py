@@ -1,10 +1,12 @@
 from typing import List, Optional
+from datetime import date, datetime, time
 from sqlalchemy.orm import Session
 from fastapi import HTTPException, status
 
 from models.venta import Venta, DetalleVenta
 from models.producto import Producto
-from app.schemas import VentaCreate
+from app.schemas import VentaCreate, ReporteRankingProducto, ReporteGanancias
+from sqlalchemy import func
 
 def create_venta(db: Session, venta: VentaCreate) -> Venta:
     total_venta = 0
@@ -64,3 +66,52 @@ def get_venta(db: Session, venta_id: int) -> Optional[Venta]:
 
 def get_ventas(db: Session, skip: int = 0, limit: int = 100) -> List[Venta]:
     return db.query(Venta).offset(skip).limit(limit).all()
+
+def get_ranking_productos_vendidos(db: Session, limit: int = 10) -> List[ReporteRankingProducto]:
+    """
+    Obtiene un ranking de los productos más vendidos.
+    """
+    ranking_query = (
+        db.query(
+            Producto,
+            func.sum(DetalleVenta.cantidad).label("cantidad_total_vendida")
+        )
+        .join(Producto, DetalleVenta.producto_id == Producto.id)
+        .group_by(Producto.id)
+        .order_by(func.sum(DetalleVenta.cantidad).desc())
+        .limit(limit)
+        .all()
+    )
+
+    return [
+        ReporteRankingProducto(
+            producto=producto,
+            cantidad_total_vendida=cantidad if cantidad else 0
+        )
+        for producto, cantidad in ranking_query
+    ]
+
+def get_reporte_ganancias(db: Session, fecha_inicio: date, fecha_fin: date) -> ReporteGanancias:
+    """
+    Calcula las ganancias totales, costos y ventas en un rango de fechas.
+    """
+    # Convertir las fechas a datetime para una comparación precisa
+    fecha_inicio_dt = datetime.combine(fecha_inicio, time.min)
+    fecha_fin_dt = datetime.combine(fecha_fin, time.max)
+
+    detalles = (
+        db.query(DetalleVenta)
+        .join(Venta)
+        .filter(Venta.fecha.between(fecha_inicio_dt, fecha_fin_dt))
+        .all()
+    )
+
+    total_ventas = sum(d.subtotal for d in detalles)
+    costo_total = sum(d.producto.costo_unitario * d.cantidad for d in detalles)
+    ganancia_neta = total_ventas - costo_total
+
+    return ReporteGanancias(
+        total_ventas=total_ventas,
+        costo_total=costo_total,
+        ganancia_neta=ganancia_neta,
+    )
