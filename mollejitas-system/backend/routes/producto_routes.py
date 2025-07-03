@@ -4,20 +4,12 @@ from typing import List
 
 from app import schemas
 from services import producto_service
-from app.database import SessionLocal
+from app.dependencies import get_db
 
 router = APIRouter(
     prefix="/productos",
     tags=["productos"]
 )
-
-# Dependency to get DB session
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
 
 @router.post("/", response_model=schemas.Producto, status_code=201)
 def create_producto_endpoint(producto: schemas.ProductoCreate, db: Session = Depends(get_db)):
