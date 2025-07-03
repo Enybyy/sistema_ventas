@@ -16,11 +16,11 @@ def create_producto(db: Session, producto: ProductoCreate) -> ProductoModel:
     db.refresh(db_producto)
     return db_producto
 
-def get_productos_bajo_stock(db: Session, umbral: int) -> List[ProductoModel]:
+def get_productos_bajo_stock(db: Session) -> List[ProductoModel]:
     """
-    Obtiene una lista de productos cuyo stock es igual o menor al umbral especificado.
+    Obtiene una lista de productos cuyo stock actual es igual o menor a su stock mínimo definido.
     """
-    return db.query(ProductoModel).filter(ProductoModel.stock <= umbral).all()
+    return db.query(ProductoModel).filter(ProductoModel.stock_actual <= ProductoModel.stock_minimo).all()
 
 
 def update_producto(db: Session, producto_id: int, producto_update: ProductoUpdate) -> Optional[ProductoModel]:

@@ -8,9 +8,10 @@ class Compra(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     fecha = Column(DateTime(timezone=True), server_default=func.now())
-    proveedor = Column(String, nullable=True)
     total = Column(Float, nullable=False)
+    proveedor_id = Column(Integer, ForeignKey("proveedores.id"), nullable=False)
 
+    proveedor = relationship("Proveedor")
     detalles = relationship("DetalleCompra", back_populates="compra")
 
 class DetalleCompra(Base):

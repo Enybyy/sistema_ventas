@@ -5,6 +5,7 @@ from fastapi import HTTPException, status
 
 from models.venta import Venta, DetalleVenta
 from models.producto import Producto
+from models.gasto import Gasto
 from app.schemas import VentaCreate, ReporteRankingProducto, ReporteGanancias
 from sqlalchemy import func
 
@@ -21,10 +22,10 @@ def create_venta(db: Session, venta: VentaCreate) -> Venta:
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail=f"Producto con id {item.producto_id} no encontrado",
             )
-        if producto.stock < item.cantidad:
+        if producto.stock_actual < item.cantidad:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"Stock insuficiente para '{producto.nombre}'. Disponible: {producto.stock}, solicitado: {item.cantidad}",
+                detail=f"Stock insuficiente para '{producto.nombre}'. Disponible: {producto.stock_actual}, solicitado: {item.cantidad}",
             )
 
         subtotal_item = producto.precio_venta * item.cantidad
@@ -53,7 +54,7 @@ def create_venta(db: Session, venta: VentaCreate) -> Venta:
     # 3. Actualizar el stock de los productos involucrados
     for item_actualizar in productos_a_actualizar:
         producto = item_actualizar["producto"]
-        producto.stock -= item_actualizar["cantidad_vendida"]
+        producto.stock_actual -= item_actualizar["cantidad_vendida"]
         db.add(producto)
 
     # 4. Confirmar todos los cambios en la base de datos de forma atómica
@@ -93,25 +94,33 @@ def get_ranking_productos_vendidos(db: Session, limit: int = 10) -> List[Reporte
 
 def get_reporte_ganancias(db: Session, fecha_inicio: date, fecha_fin: date) -> ReporteGanancias:
     """
-    Calcula las ganancias totales, costos y ventas en un rango de fechas.
+    Calcula las ganancias totales, costos, gastos y ventas en un rango de fechas.
     """
     # Convertir las fechas a datetime para una comparación precisa
     fecha_inicio_dt = datetime.combine(fecha_inicio, time.min)
     fecha_fin_dt = datetime.combine(fecha_fin, time.max)
 
+    # 1. Calcular total de ventas y costos a partir de los detalles de venta
     detalles = (
         db.query(DetalleVenta)
         .join(Venta)
         .filter(Venta.fecha.between(fecha_inicio_dt, fecha_fin_dt))
         .all()
     )
-
     total_ventas = sum(d.subtotal for d in detalles)
-    costo_total = sum(d.producto.costo_unitario * d.cantidad for d in detalles)
-    ganancia_neta = total_ventas - costo_total
+    total_costos = sum(d.producto.costo_unitario * d.cantidad for d in detalles)
+
+    # 2. Calcular total de gastos operativos
+    total_gastos = db.query(func.sum(Gasto.monto)).filter(
+        Gasto.fecha.between(fecha_inicio_dt, fecha_fin_dt)
+    ).scalar() or 0.0
+
+    # 3. Calcular ganancia neta
+    ganancia_neta = total_ventas - total_costos - total_gastos
 
     return ReporteGanancias(
         total_ventas=total_ventas,
-        costo_total=costo_total,
+        total_costos=total_costos,
+        total_gastos=total_gastos,
         ganancia_neta=ganancia_neta,
     )

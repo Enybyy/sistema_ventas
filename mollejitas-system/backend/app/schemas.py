@@ -9,7 +9,8 @@ class ProductoBase(BaseModel):
     precio_venta: float
     costo_unitario: float
     categoria: str
-    stock: Optional[int] = 0
+    stock_actual: Optional[int] = 0
+    stock_minimo: Optional[int] = 0
 
 # Esquema para la creación de un Producto (hereda de ProductoBase)
 class ProductoCreate(ProductoBase):
@@ -22,12 +23,14 @@ class ProductoUpdate(BaseModel):
     precio_venta: Optional[float] = None
     costo_unitario: Optional[float] = None
     categoria: Optional[str] = None
-    stock: Optional[int] = None
+    stock_actual: Optional[int] = None
+    stock_minimo: Optional[int] = None
 
 # Esquema para leer/retornar un Producto (hereda de ProductoBase)
 class Producto(ProductoBase):
     id: int
-    stock: int
+    stock_actual: int
+    stock_minimo: int
 
     class Config:
         from_attributes = True
@@ -100,9 +103,32 @@ class DetalleCompra(DetalleCompraBase):
     class Config:
         from_attributes = True
 
+# Esquemas para Proveedor
+class ProveedorBase(BaseModel):
+    nombre: str
+    contacto_nombre: Optional[str] = None
+    telefono: Optional[str] = None
+    email: Optional[str] = None
+
+class ProveedorCreate(ProveedorBase):
+    pass
+
+class ProveedorUpdate(BaseModel):
+    nombre: Optional[str] = None
+    contacto_nombre: Optional[str] = None
+    telefono: Optional[str] = None
+    email: Optional[str] = None
+
+class Proveedor(ProveedorBase):
+    id: int
+
+    class Config:
+        from_attributes = True
+
+
 # Esquemas para Compra
 class CompraBase(BaseModel):
-    proveedor: str | None = None
+    proveedor_id: int
     detalles: list[DetalleCompraCreate]
 
 class CompraCreate(CompraBase):
@@ -112,6 +138,7 @@ class Compra(CompraBase):
     id: int
     fecha: datetime
     total: float
+    proveedor: Proveedor
     detalles: List[DetalleCompra] = []
 
     class Config:
@@ -129,5 +156,6 @@ class ReporteRankingProducto(BaseModel):
 
 class ReporteGanancias(BaseModel):
     total_ventas: float
-    costo_total: float
+    total_costos: float
+    total_gastos: float
     ganancia_neta: float

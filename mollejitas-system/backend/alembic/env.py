@@ -50,6 +50,7 @@ from models.producto import Producto
 from models.venta import Venta, DetalleVenta # Import all models here
 from models.compra import Compra, DetalleCompra
 from models.gasto import Gasto
+from models.proveedor import Proveedor
 
 target_metadata = Base.metadata
 

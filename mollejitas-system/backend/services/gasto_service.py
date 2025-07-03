@@ -1,19 +1,19 @@
 from sqlalchemy.orm import Session
 from fastapi import HTTPException
-from models import gasto as gasto_model
+from models.gasto import Gasto
 from app import schemas
 from typing import List, Optional
 from datetime import date
 
-def create_gasto(db: Session, gasto: schemas.GastoCreate) -> models.Gasto:
-    db_gasto = models.Gasto(**gasto.dict())
+def create_gasto(db: Session, gasto: schemas.GastoCreate) -> Gasto:
+    db_gasto = Gasto(**gasto.dict())
     db.add(db_gasto)
     db.commit()
     db.refresh(db_gasto)
     return db_gasto
 
-def get_gasto(db: Session, gasto_id: int) -> Optional[models.Gasto]:
-    return db.query(models.Gasto).filter(models.Gasto.id == gasto_id).first()
+def get_gasto(db: Session, gasto_id: int) -> Optional[Gasto]:
+    return db.query(Gasto).filter(Gasto.id == gasto_id).first()
 
 def get_gastos(
     db: Session, 
@@ -22,19 +22,19 @@ def get_gastos(
     categoria: Optional[str] = None, 
     skip: int = 0, 
     limit: int = 100
-) -> List[models.Gasto]:
-    query = db.query(models.Gasto)
+) -> List[Gasto]:
+    query = db.query(Gasto)
 
     if fecha_inicio:
-        query = query.filter(models.Gasto.fecha >= fecha_inicio)
+        query = query.filter(Gasto.fecha >= fecha_inicio)
     if fecha_fin:
-        query = query.filter(models.Gasto.fecha <= fecha_fin)
+        query = query.filter(Gasto.fecha <= fecha_fin)
     if categoria:
-        query = query.filter(models.Gasto.categoria.ilike(f"%{categoria}%"))
+        query = query.filter(Gasto.categoria.ilike(f"%{categoria}%"))
 
     return query.offset(skip).limit(limit).all()
 
-def update_gasto(db: Session, gasto_id: int, gasto: schemas.GastoUpdate) -> Optional[models.Gasto]:
+def update_gasto(db: Session, gasto_id: int, gasto: schemas.GastoUpdate) -> Optional[Gasto]:
     db_gasto = get_gasto(db, gasto_id)
     if not db_gasto:
         return None
@@ -48,7 +48,7 @@ def update_gasto(db: Session, gasto_id: int, gasto: schemas.GastoUpdate) -> Opti
     db.refresh(db_gasto)
     return db_gasto
 
-def delete_gasto(db: Session, gasto_id: int) -> Optional[models.Gasto]:
+def delete_gasto(db: Session, gasto_id: int) -> Optional[Gasto]:
     db_gasto = get_gasto(db, gasto_id)
     if not db_gasto:
         return None
@@ -56,3 +56,4 @@ def delete_gasto(db: Session, gasto_id: int) -> Optional[models.Gasto]:
     db.delete(db_gasto)
     db.commit()
     return db_gasto
+

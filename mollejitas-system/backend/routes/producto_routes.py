@@ -33,13 +33,11 @@ def read_producto(producto_id: int, db: Session = Depends(get_db)):
 
 
 @router.get("/reportes/bajo-stock", response_model=List[Producto])
-def get_productos_con_bajo_stock(
-    umbral: int = 10, db: Session = Depends(get_db)
-):
+def get_productos_con_bajo_stock(db: Session = Depends(get_db)):
     """
-    Obtiene una lista de productos con stock bajo según un umbral.
+    Obtiene una lista de productos cuyo stock actual es igual o menor a su stock mínimo.
     """
-    return producto_service.get_productos_bajo_stock(db=db, umbral=umbral)
+    return producto_service.get_productos_bajo_stock(db=db)
 
 
 @router.patch("/{producto_id}", response_model=Producto)
