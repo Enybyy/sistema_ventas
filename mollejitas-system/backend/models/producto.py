@@ -10,3 +10,4 @@ class Producto(Base):
     precio_venta = Column(Float, nullable=False)
     costo_unitario = Column(Float, nullable=False)
     categoria = Column(String, index=True, nullable=False)
+    stock = Column(Integer, nullable=False, default=0)

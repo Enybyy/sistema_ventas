@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, Float, DateTime, ForeignKey
+from sqlalchemy import Column, Integer, String, Float, DateTime, ForeignKey
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from app.database import Base
@@ -8,6 +8,7 @@ class Venta(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     fecha = Column(DateTime(timezone=True), server_default=func.now())
+    cliente_nombre = Column(String, default="Cliente Anónimo")
     total = Column(Float, nullable=False)
 
     detalles = relationship("DetalleVenta", back_populates="venta")

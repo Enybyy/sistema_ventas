@@ -9,14 +9,25 @@ class ProductoBase(BaseModel):
     precio_venta: float
     costo_unitario: float
     categoria: str
+    stock: Optional[int] = 0
 
 # Esquema para la creación de un Producto (hereda de ProductoBase)
 class ProductoCreate(ProductoBase):
     pass
 
+# Esquema para actualizar un Producto (todos los campos son opcionales)
+class ProductoUpdate(BaseModel):
+    nombre: Optional[str] = None
+    descripcion: Optional[str] = None
+    precio_venta: Optional[float] = None
+    costo_unitario: Optional[float] = None
+    categoria: Optional[str] = None
+    stock: Optional[int] = None
+
 # Esquema para leer/retornar un Producto (hereda de ProductoBase)
 class Producto(ProductoBase):
     id: int
+    stock: int
 
     class Config:
         from_attributes = True
@@ -40,7 +51,7 @@ class DetalleVenta(DetalleVentaBase):
 
 # Esquemas para Venta
 class VentaBase(BaseModel):
-    pass
+    cliente_nombre: Optional[str] = "Cliente Anónimo"
 
 class VentaCreate(VentaBase):
     detalles: List[DetalleVentaCreate]
